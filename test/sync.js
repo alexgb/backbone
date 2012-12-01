@@ -209,4 +209,43 @@ $(document).ready(function() {
     strictEqual(this.ajaxSettings.beforeSend(xhr), false);
   });
 
+  test("#1224 - Parse JSON response on error.", 2, function() {
+    var model = new Backbone.Model;
+    model.url = '/test';
+    var xhr = {
+      getResponseHeader: function() {
+        return 'application/json';
+      },
+      responseText: '{"message": "failed"}'
+    };
+
+    Backbone.sync('create', model, {
+      error: function(model, xhr) {
+        ok(_.isObject(xhr.response));
+        equal(xhr.response.message, 'failed');
+      }
+    });
+
+    this.ajaxSettings.error(xhr);
+  });
+
+    test("#1224 - Parse JSON response as null on malformed response.", 1, function() {
+    var model = new Backbone.Model;
+    model.url = '/test';
+    var xhr = {
+      getResponseHeader: function() {
+        return 'application/json';
+      },
+      responseText: 'failed'
+    };
+
+    Backbone.sync('create', model, {
+      error: function(model, xhr) {
+        equal(xhr.response, null);
+      }
+    });
+
+    this.ajaxSettings.error(xhr);
+  });
+
 });

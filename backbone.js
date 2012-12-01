@@ -1435,6 +1435,14 @@
 
     var error = options.error;
     options.error = function(xhr, status, thrown) {
+      // Parse json response body on error simulating xhr2 W3C spec
+      if (xhr && xhr.getResponseHeader('content-type').match(/^(application\/json|text\/javascript)/)) {
+        var response = null;
+        try {
+          response = xhr.response || (Backbone.$.parseJSON || JSON.parse)(xhr.responseText);
+        } catch(e) {}
+        xhr.response = response;
+      }
       if (error) error(model, xhr, options);
       model.trigger('error', model, xhr, options);
     };
